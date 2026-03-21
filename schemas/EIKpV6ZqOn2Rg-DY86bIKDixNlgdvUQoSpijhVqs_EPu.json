@@ -1,0 +1,227 @@
+{
+  "$id": "EIKpV6ZqOn2Rg-DY86bIKDixNlgdvUQoSpijhVqs_EPu",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Self-Attested Invoice Credential",
+  "description": "vLEI Credential for self-attested business invoice",
+  "type": "object",
+  "credentialType": "SelfAttestedInvoiceCredential",
+  "version": "1.1.0",
+  "properties": {
+    "v": {
+      "description": "Version string using ACDC conventions",
+      "type": "string"
+    },
+    "d": {
+      "description": "Credential SAID",
+      "type": "string"
+    },
+    "i": {
+      "description": "Issuer AID",
+      "type": "string"
+    },
+    "ri": {
+      "description": "Credential Registry SAID",
+      "type": "string"
+    },
+    "s": {
+      "description": "Schema SAID",
+      "type": "string"
+    },
+    "a": {
+      "oneOf": [
+        {
+          "description": "Attributes block SAID",
+          "type": "string"
+        },
+        {
+          "$id": "",
+          "description": "Attributes block",
+          "type": "object",
+          "properties": {
+            "d": {
+              "description": "Attributes block SAID",
+              "type": "string"
+            },
+            "i": {
+              "description": "Issuee AID",
+              "type": "string"
+            },
+            "dt": {
+              "description": "Issuance date time ISO-8601",
+              "type": "string",
+              "format": "date-time"
+            },
+            "invoiceNumber": {
+              "description": "Unique invoice identifier",
+              "type": "string"
+            },
+            "invoiceDate": {
+              "description": "Invoice date",
+              "type": "string"
+            },
+            "dueDate": {
+              "description": "Payment due date",
+              "type": "string"
+            },
+            "sellerLEI": {
+              "description": "Seller Legal Entity Identifier",
+              "type": "string"
+            },
+            "buyerLEI": {
+              "description": "Buyer Legal Entity Identifier",
+              "type": "string"
+            },
+            "currency": {
+              "description": "Currency code",
+              "type": "string"
+            },
+            "totalAmount": {
+              "description": "Total invoice amount",
+              "type": "number"
+            },
+            "lineItems": {
+              "description": "Invoice line items",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "description": {
+                    "description": "Item description",
+                    "type": "string"
+                  },
+                  "quantity": {
+                    "description": "Item quantity",
+                    "type": "number"
+                  },
+                  "unitPrice": {
+                    "description": "Price per unit",
+                    "type": "number"
+                  },
+                  "amount": {
+                    "description": "Line item total (quantity * unitPrice)",
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "description",
+                  "quantity",
+                  "unitPrice",
+                  "amount"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "paymentTerms": {
+              "description": "Payment terms and conditions",
+              "type": "object",
+              "properties": {
+                "terms": {
+                  "description": "Payment terms description",
+                  "type": "string"
+                },
+                "discountCurve": {
+                  "description": "Discount curve function for early payment incentives",
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "daysEarly": {
+                        "description": "Days before due date",
+                        "type": "number"
+                      },
+                      "discountPercent": {
+                        "description": "Discount percentage offered",
+                        "type": "number"
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "additionalProperties": false
+            },
+            "paymentMethod": {
+              "description": "Payment method",
+              "type": "string"
+            },
+            "paymentChainID": {
+              "description": "Blockchain chain ID",
+              "type": "string"
+            },
+            "paymentWalletAddress": {
+              "description": "Payment wallet address",
+              "type": "string"
+            },
+            "ref_uri": {
+              "description": "Reference URI",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "d",
+            "i",
+            "dt",
+            "invoiceNumber",
+            "sellerLEI",
+            "buyerLEI",
+            "currency",
+            "totalAmount"
+          ]
+        }
+      ]
+    },
+    "r": {
+      "oneOf": [
+        {
+          "description": "Rules block SAID",
+          "type": "string"
+        },
+        {
+          "$id": "",
+          "description": "Rules block",
+          "type": "object",
+          "properties": {
+            "d": {
+              "description": "Rules block SAID",
+              "type": "string"
+            },
+            "usageDisclaimer": {
+              "description": "Usage Disclaimer",
+              "type": "object",
+              "properties": {
+                "l": {
+                  "description": "Linked data disclaimer",
+                  "type": "string"
+                }
+              }
+            },
+            "selfAttestation": {
+              "description": "Self attestation notice",
+              "type": "object",
+              "properties": {
+                "l": {
+                  "description": "Self attestation text",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "d"
+          ]
+        }
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "v",
+    "d",
+    "i",
+    "ri",
+    "s",
+    "a"
+  ]
+}

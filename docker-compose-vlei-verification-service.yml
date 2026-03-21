@@ -1,0 +1,31 @@
+# Copy this entire block and add it to docker-compose.yml
+# Add it AFTER the "verifier:" service section (around line 140)
+# Make sure the indentation matches (2 spaces for service name)
+
+  # KERI-enabled Agent Delegation Verification Service
+  vlei-verification:
+    build:
+      context: ./config/verifier-sally
+      dockerfile: Dockerfile.verification-keri
+      no_cache: true
+    container_name: vlei_verification
+    hostname: vlei-verification
+    stop_grace_period: 1s
+    environment:
+      PYTHONUNBUFFERED: 1
+      PYTHONIOENCODING: UTF-8
+      PYTHONWARNINGS: 'ignore::SyntaxWarning'
+      KERIA_URL: http://keria:3902
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "--tries=1", "--no-verbose", "http://127.0.0.1:9723/health" ]
+      interval: 3s
+      timeout: 3s
+      retries: 4
+      start_period: 2s
+    ports:
+      - "9724:9723"
+    depends_on:
+      keria:
+        condition: service_healthy
+      schema:
+        condition: service_healthy

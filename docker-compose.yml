@@ -1,0 +1,267 @@
+# Docker compose file for vLEI Hackathon 2025 Workshop
+
+# image tags
+x-vlei-image: &vlei-image
+  image: gleif/vlei:1.0.1
+x-witness-demo-image: &witness-demo-image
+  image: gleif/keri:1.2.9
+x-keria-image: &keria-image
+  image: gleif/keria:0.3.0
+x-sally-image: &sally-image
+  image: gleif/sally:1.0.2
+
+x-python-envs: &python-envs
+  PYTHONUNBUFFERED: 1 # Ensure output is logged in real-time
+  PYTHONIOENCODING: UTF-8 # Ensure consistent logging encoding
+  PYTHONWARNINGS: ignore::SyntaxWarning # Ignore regular expression syntax warning
+
+x-healthcheck: &healthcheck
+  interval: 3s
+  timeout: 3s
+  retries: 4
+  start_period: 2s
+
+networks:
+  default:
+    external: true
+    name: vlei_workshop
+
+volumes:
+  witness-vol:
+  verifier-vol:
+  keria-vol:
+  shell-vol:
+  resolver-vol:
+
+services:
+  # Schema Server - for vLEI ACDC Schemas
+  schema:
+    stop_grace_period: 1s
+    <<: *vlei-image
+    environment:
+      <<: *python-envs
+    # Mount custom schemas and copy them into the main schema directory before starting
+    volumes:
+      - ./schemas:/vLEI/custom-schema:ro
+    command:
+      - sh
+      - -c
+      - |
+        echo "=== Starting vLEI Schema Server ==="
+        echo "Copying custom schemas from /vLEI/custom-schema/ to /vLEI/schema/..."
+        ls -la /vLEI/custom-schema/ || echo "No custom schemas found"
+        cp -fv /vLEI/custom-schema/*.json /vLEI/schema/ 2>/dev/null || echo "No JSON files to copy"
+        echo "Schema directory contents:"
+        ls -la /vLEI/schema/*.json 2>/dev/null | head -20 || echo "No schemas in /vLEI/schema/"
+        echo "Starting vLEI-server..."
+        exec vLEI-server -s /vLEI/schema -c /vLEI/schema -o /vLEI/schema --loglevel INFO
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://127.0.0.1:7723/oobi/EBfdlu8R27Fbx-ehrqwImnK-8Cm79sqbAQ4MmvEAYqao" ]
+      interval: 5s
+      timeout: 5s
+      retries: 6
+      start_period: 5s
+    ports:
+      - "7723:7723"
+
+  # Demo Witness Service (6 witnesses from `kli witness demo`)
+  witness:
+    stop_grace_period: 1s
+    <<: *witness-demo-image
+    environment:
+      <<: *python-envs
+    healthcheck:
+      test: python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5642/oobi')"
+      interval: 3s
+      timeout: 3s
+      retries: 4
+      start_period: 10s
+    command: witness demo --loglevel INFO
+    volumes:
+      - ./config/witnesses:/keripy/scripts/keri/cf/main
+    ports:
+      - "5642:5642" # witness named wan
+      - "5643:5643" # witness named wil
+      - "5644:5644" # witness named wes
+      - "5645:5645" # witness named wit
+      - "5646:5646" # witness named wub
+      - "5647:5647" # witness named wyz
+    depends_on:
+      schema:
+        condition: service_healthy
+
+  # KERIA Agent Server
+  keria:
+    <<: *keria-image
+    stop_grace_period: 1s
+    environment:
+      <<: *python-envs
+      KERI_AGENT_CORS: "True"
+    volumes:
+      - ./config/keria/keria.json:/keria/config/keri/cf/keria.json
+      - keria-vol:/usr/local/var/keri
+    command: start --config-dir /keria/config --config-file keria --name keria --loglevel INFO
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "--tries=1", "--no-verbose", "http://127.0.0.1:3902/spec.yaml" ]
+      <<: *healthcheck
+    ports:
+      - "3901:3901"  # admin API port
+      - "3902:3902"  # http API port
+      - "3903:3903"  # boot API port
+    depends_on:
+      schema:
+        condition: service_healthy
+      witness:
+        condition: service_healthy
+
+  # Sample Webhook that will receive IPEX credential presentation bodies as JSON from Sally
+  resource:
+    stop_grace_period: 1s
+    <<: *sally-image
+    environment:
+      <<: *python-envs
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "--tries=1", "--no-verbose", "http://127.0.0.1:9923/health" ]
+      <<: *healthcheck
+    ports:
+      - "9923:9923"
+    entrypoint: [ 'sally', 'hook', 'demo' ]
+
+  # Sally Verifier in Direct mode
+  verifier:
+    stop_grace_period: 1s
+    <<: *sally-image
+    environment: 
+      <<: *python-envs
+      SALLY_KS_NAME: verifier
+      SALLY_SALT: 0ABVqAtad0CBkhDhCEPd514T
+      SALLY_PASSCODE: 4TBjjhmKu9oeDp49J7Xdy
+      SALLY_PORT: 9723
+      WEBHOOK_URL: http://resource:9923
+      GEDA_PRE: ${GEDA_PRE:-ED1e8pD24aqd0dCZTQHaGpfcluPFD2ajGIY3ARgE5Yvr}
+    volumes:
+      - ./config/verifier-sally/verifier.json:/sally/conf/keri/cf/verifier.json
+      - ./config/verifier-sally/incept-no-wits.json:/sally/conf/incept-no-wits.json
+      - ./config/verifier-sally/entry-point.sh:/sally/entry-point.sh
+      - verifier-vol:/usr/local/var/keri
+    healthcheck:
+      test: [ "CMD", "wget", "--spider", "--tries=1", "--no-verbose", "http://127.0.0.1:9723/health" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    ports:
+      - "9723:9723"
+    entrypoint: "/sally/entry-point.sh"
+    depends_on:
+      schema:
+        condition: service_healthy
+      witness:
+        condition: service_healthy
+
+  # KERI-enabled Agent Delegation Verification Service
+  vlei-verification:
+    build:
+      context: ./config/verifier-sally
+      dockerfile: Dockerfile.verification-keri
+      no_cache: true
+    container_name: vlei_verification
+    hostname: vlei-verification
+    stop_grace_period: 1s
+    environment:
+      <<: *python-envs
+      KERIA_URL: http://keria:3902
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://127.0.0.1:9723/health" ]
+      <<: *healthcheck
+    ports:
+      - "9724:9723"
+    depends_on:
+      keria:
+        condition: service_healthy
+      schema:
+        condition: service_healthy
+
+  tsx-shell:
+    image: gleif/wkshp-tsx-shell:latest
+    build:
+      context: ./sig-wallet
+      no_cache: true
+    container_name: tsx_shell
+    hostname: tsx_shell
+    restart: unless-stopped
+    stop_grace_period: 1s
+    user: "${UID}:${GID}"   
+    volumes:
+      - ./task-scripts/workshop-env-vars.sh:/vlei/workshop-env-vars.sh
+      - ./task-scripts/tsx-script-runner.sh:/vlei/tsx-script-runner.sh
+      - ./task-data:/task-data
+      - ./sig-wallet:/vlei/sig-wallet
+      - ./appconfig:/vlei/appconfig:ro  # Config files including schemaSaids.json
+    entrypoint: tail -f /dev/null
+    tty: true
+
+
+  # Utility container for running
+  vlei-shell:
+    image: gleif/dws-base:0.3.1
+    container_name: vlei_shell
+    hostname: vlei_shell
+    environment:
+      <<: *python-envs
+    stop_grace_period: 1s
+    volumes:
+      - shell-vol:/usr/local/var/keri
+      - ./task-scripts/workshop-env-vars.sh:/vlei/workshop-env-vars.sh
+      - ./config/geda:/vlei/config
+      - ./task-scripts:/vlei/task-scripts
+    entrypoint: tail -f /dev/null
+    tty: true
+
+#  dws:
+#    image: gleif/did-webs-service:0.3.1
+#    stop_grace_period: 1s
+#    environment:
+#      <<: *python-envs
+#    healthcheck:
+#      test: [ "CMD", "curl", "-f", "http://127.0.0.1:7680/health" ]
+#      <<: *healthcheck
+#    ports:
+#      - "7680:7680"
+#    volumes:
+#      - ./did-webs:/dws
+#      - shell-vol:/usr/local/var/keri
+#    entrypoint: [
+#      "dws", "did", "webs", "service",
+#      "--http", "7680",
+#      "--name", "geda",
+#      "--alias", "geda",
+#      "--config-dir", "/dws/config/controller",
+#      "--config-file", "geda",
+#      "--did-path", "dws",
+#      "--loglevel", "INFO"
+#    ]
+#
+#  dws-resolver:
+#    image: gleif/did-webs-resolver-service:0.3.1
+#    container_name: dws-resolver
+#    hostname: dws-resolver
+#    environment:
+#      <<: *python-envs
+#    healthcheck:
+#      test: [ "CMD", "curl", "-f", "http://127.0.0.1:7677/health" ]
+#      <<: *healthcheck
+#    depends_on:
+#      dws:
+#        condition: service_healthy
+#    stop_grace_period: 1s
+#    ports:
+#      - "7677:7677"
+#    volumes:
+#      - ./dws_resolver:/dws/config/
+#      - ./dws_resolver/resolver-init.sh:/dws/resolver-init.sh
+#      - resolver-vol:/usr/local/var/keri
+#    entrypoint: /dws/resolver-init.sh
+
+
+

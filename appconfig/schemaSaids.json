@@ -1,0 +1,18 @@
+{
+  "comment": "THIS FILE IS THE SINGLE SOURCE OF TRUTH FOR SCHEMA SAIDs",
+  "comment2": "Run ./saidify-with-docker.sh to regenerate SAIDs after schema changes",
+  "invoiceSchema": {
+    "said": "EIKpV6ZqOn2Rg-DY86bIKDixNlgdvUQoSpijhVqs_EPu",
+    "file": "./schemas/self-attested-invoice.json",
+    "description": "Self-attested invoice credential schema with lineItems and paymentTerms"
+  },
+  "vLEISchemas": {
+    "comment": "These are standard vLEI schemas from gleif-vLEI-server",
+    "qvi": "EBfdlu8R27Fbx-ehrqwImnK-8Cm79sqbAQ4MmvEAYqao",
+    "le": "ENPXp1vQzRF6JwIuS-mp2U8Uf1MoADoP_GqQ62VsDZWY",
+    "oor": "EBNaNu-M9P5cgrnfl2Fvymy4E_jvxxyjb70PRtiANlJy",
+    "oorAuth": "EKA57bKBKxr_kN7iN5i7lMUxpMG-s19dRcmov1iDxz-E",
+    "ecr": "EEy9PkikFcANV1l7EHukCeXqrzT1hNZjGlUk7wuMO5jw",
+    "ecrAuth": "EH6ekLjSr8V32WyFbGe1zXjTzFs9PkTYmupJ9H65O14g"
+  }
+}

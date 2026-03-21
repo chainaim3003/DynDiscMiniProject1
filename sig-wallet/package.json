@@ -1,0 +1,21 @@
+{
+  "name": "sig-wallet",
+  "version": "1.0.0",
+  "description": "Headless SignifyTS wallet for vLEI Hackathon 2025 Workshop",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "signify-ts": "0.3.0-rc2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx --watch src/index.ts",
+    "start": "tsx src/index.ts"
+  }
+}
+

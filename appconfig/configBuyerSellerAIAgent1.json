@@ -1,0 +1,57 @@
+{
+  "root": {
+    "alias": "GLEIF_ROOT",
+    "registryName": "GLEIF_ROOT_REGISTRY"
+  },
+  "qvi": {
+    "alias": "QVI",
+    "lei": "",
+    "registryName": "QVI_REGISTRY"
+  },
+  "organizations": [
+    {
+      "id": "jupiter",
+      "alias": "Jupiter_Knitting_Company",
+      "name": "JUPITER KNITTING COMPANY",
+      "lei": "3358004DXAMRWRUIYJ05",
+      "registryName": "JUPITER_REGISTRY",
+      "persons": [
+        {
+          "alias": "Jupiter_Chief_Sales_Officer",
+          "legalName": "Chief Sales Officer",
+          "officialRole": "ChiefSalesOfficer",
+           "agents": [
+            {
+              "alias": "jupiterSellerAgent",
+              "delegatorAID":"",
+              "delegateeAID":"",
+              "agentType": "AI"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tommy",
+      "alias": "Tommy_Hilfiger_Europe",
+      "name": "TOMMY HILFIGER EUROPE B.V.",
+      "lei": "54930012QJWZMYHNJW95",
+      "registryName": "TOMMY_REGISTRY",
+      "persons": [
+        {
+          "alias": "Tommy_Chief_Procurement_Officer",
+          "legalName": "Chief Procurement Officer",
+          "officialRole": "ChiefProcurementOfficer",
+          "agents": [
+            {
+              "alias": "tommyBuyerAgent",
+              "delegatorAID":"",
+              "delegateeAID":"",
+              "agentType": "AI"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

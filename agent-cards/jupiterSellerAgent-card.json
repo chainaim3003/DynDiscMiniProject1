@@ -1,0 +1,104 @@
+{
+  "name": "Jupiter Seller Agent",
+  "description": "Autonomous AI agent responsible for initiating, negotiating, and managing sales orders for JUPITER KNITTING COMPANY.",
+  "url": "https://jupiter-agent.com/",
+  "provider": {
+    "organization": "JUPITER KNITTING COMPANY",
+    "url": "https://jupiterknitting.com"
+  },
+  "version": "1.0.0",
+  "capabilities": {
+    "streaming": true,
+    "stateTransitionHistory": true
+  },
+  "skills": [
+    {
+      "id": "procurement_management",
+      "name": "Procurement Management",
+      "description": "Collaborates with verified buyer agents to review incoming trade requirements, evaluate purchase requests, and align production capacity with order feasibility. Ensures all interactions occur within verified GLEIF trust boundaries.",
+      "tags": [
+        "seller",
+        "procurement",
+        "verification",
+        "gleif",
+        "trade",
+        "compliance"
+      ]
+    },
+    {
+      "id": "purchase_order_management",
+      "name": "Purchase Order Management",
+      "description": "Receives and processes purchase orders from verified buyer agents. Confirms order terms, delivery schedules, and initiates production after GLEIF credential validation.",
+      "tags": [
+        "seller",
+        "sales",
+        "purchase-order",
+        "gleif",
+        "automation",
+        "order-processing"
+      ]
+    },
+    {
+      "id": "invoice_approval",
+      "name": "Invoice Approval & Dispatch",
+      "description": "Generates and approves digital invoices for completed or approved purchase orders. Ensures all invoices include embedded vLEI credentials and adhere to traceability standards.",
+      "tags": [
+        "seller",
+        "finance",
+        "invoice",
+        "verification",
+        "traceability",
+        "gleif"
+      ]
+    },
+    {
+      "id": "payment_authorization",
+      "name": "Payment Authorization & Reconciliation",
+      "description": "Validates incoming payment confirmations from buyer agents, authenticates transaction credentials, and updates order fulfillment status in coordination with verified payment channels.",
+      "tags": [
+        "seller",
+        "payment",
+        "authentication",
+        "finance",
+        "gleif",
+        "compliance"
+      ]
+    }
+  ],
+  "extensions": {
+    "gleifIdentity": {
+      "lei": "3358004DXAMRWRUIYJ05",
+      "legalEntityName": "JUPITER KNITTING COMPANY",
+      "registryName": "JUPITER_REGISTRY",
+      "qvi": "EK0TepAUe5dKebMTJ2Q0UWURkc7L96XIZTestiTRHAND",
+      "officialRole": "ChiefSalesOfficer",
+      "engagementRole": "Seller Agent"
+    },
+    "vLEImetadata": {
+      "delegatorAID": "EDQZtALVSiifMSVvAAmb7RVLD9bs3n17M4LdnBaEMDjr",
+      "delegateeAID": "EBiqPOuj6W4hROhI6k2KNgK8ezBepzEPJqQkIFpOONiK",
+      "delegatorSAID": "EOiPTPbKWqb2bphP7iC__vXKwZwD8Ic3VNZ0KJQuSDLX",
+      "delegateeSAID": "EBiqPOuj6W4hROhI6k2KNgK8ezBepzEPJqQkIFpOONiK",
+      "delegatorOOBI": "http://keria:3902/oobi/EDQZtALVSiifMSVvAAmb7RVLD9bs3n17M4LdnBaEMDjr/agent/ENia9S1EcVXa12VP6D-mdfxdaFyU2YjBn6K9Yu__xASm",
+      "delegateeOOBI": "http://keria:3902/oobi/EBiqPOuj6W4hROhI6k2KNgK8ezBepzEPJqQkIFpOONiK/agent/ECP-UPVJ93mpi4nr-bSf1r-U-we_aRE9i8Hzf3ZkhaZG",
+      "leAID": "ELo2YKZEs3ywsc_MsP-aaP8KTWP2PcH8tiEsYj5x0Toe",
+      "leOOBI": "http://keria:3902/oobi/ELo2YKZEs3ywsc_MsP-aaP8KTWP2PcH8tiEsYj5x0Toe/agent/ENmsuy7UOrgraMHAlVriJPjcgs4-_65K-M6m1MsjVfex",
+      "verificationPath": [
+        "GLEIF_ROOT → QVI",
+        "QVI → JUPITER KNITTING COMPANY → Chief Sales Officer → jupiterSellerAgent"
+      ],
+      "status": "verified",
+      "verificationEndpoint": "http://vlei-verification:9723/verify/agent-delegation",
+      "timestamp": "2025-11-13T15:30:40.188Z"
+    },
+    "gleifVerification": {
+      "gleifVerificationEndpoint": "https://gleif.org/api/v1/lei/3358004DXAMRWRUIYJ05"
+    },
+    "keriIdentifiers": {
+      "agentAID": "EBiqPOuj6W4hROhI6k2KNgK8ezBepzEPJqQkIFpOONiK",
+      "oorHolderAID": "EDQZtALVSiifMSVvAAmb7RVLD9bs3n17M4LdnBaEMDjr",
+      "legalEntityAID": "ELo2YKZEs3ywsc_MsP-aaP8KTWP2PcH8tiEsYj5x0Toe",
+      "qviAID": "EK0TepAUe5dKebMTJ2Q0UWURkc7L96XIZTestiTRHAND"
+    }
+  }
+}

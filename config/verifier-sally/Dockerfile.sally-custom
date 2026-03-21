@@ -1,0 +1,11 @@
+FROM gleif/sally:1.0.2
+
+# Copy the server patch script
+COPY patch_sally_server.py /tmp/patch_sally_server.py
+
+# Patch Sally's server to add custom agent delegation endpoint
+RUN python3 /tmp/patch_sally_server.py && rm /tmp/patch_sally_server.py
+
+# Use the standard Sally entrypoint
+# Note: docker-compose.yml overrides this with entry-point-extended.sh
+ENTRYPOINT ["sally"]

@@ -1,0 +1,15 @@
+{
+  "dt": "2025-10-09T00:00:00.000000+00:00",
+  "verifier": {
+    "dt": "2025-10-09T00:00:00.000000+00:00",
+    "curls": ["http://verifier:9723/"]
+  },
+  "iurls": [
+    "http://schema:7723/oobi/EBfdlu8R27Fbx-ehrqwImnK-8Cm79sqbAQ4MmvEAYqao",
+    "http://schema:7723/oobi/ENPXp1vQzRF6JwIuS-mp2U8Uf1MoADoP_GqQ62VsDZWY",
+    "http://schema:7723/oobi/EH6ekLjSr8V32WyFbGe1zXjTzFs9PkTYmupJ9H65O14g",
+    "http://schema:7723/oobi/EKA57bKBKxr_kN7iN5i7lMUxpMG-s19dRcmov1iDxz-E",
+    "http://schema:7723/oobi/EBNaNu-M9P5cgrnfl2Fvymy4E_jvxxyjb70PRtiANlJy",
+    "http://schema:7723/oobi/EEy9PkikFcANV1l7EHukCeXqrzT1hNZjGlUk7wuMO5jw"
+  ]
+}

@@ -1,0 +1,14 @@
+FROM gleif/sally:1.0.2
+
+# Find Sally's actual structure
+RUN echo "=== Finding Sally installation ===" && \
+    find /usr/local -name "sally" -type d 2>/dev/null && \
+    echo "=== Finding Python packages ===" && \
+    find /usr/local/lib -name "*.py" | grep sally | head -20 && \
+    echo "=== Checking sally command ===" && \
+    which sally && \
+    echo "=== Checking sally package location ===" && \
+    python3 -c "import sally; print(sally.__file__)" 2>/dev/null || echo "Sally not importable" && \
+    echo "=== Complete!"
+
+ENTRYPOINT ["sally"]

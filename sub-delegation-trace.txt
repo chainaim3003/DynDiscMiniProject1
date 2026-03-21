@@ -1,0 +1,217 @@
+deepitha@Deepitha:~/projects/algoTITANV61/legentvLEI$ ./task-scripts/subagent/subagent-delegate-with-unique-bran.sh \
+    JupiterTreasuryAgent \
+    jupiterSellerAgent
+════════════════════════════════════════════════════════════
+  Sub-Agent Delegation (3-Step Process)
+════════════════════════════════════════════════════════════
+
+  Sub-Agent: JupiterTreasuryAgent
+  Parent Agent: jupiterSellerAgent
+
+✓ Sub-agent BRAN verified
+✓ Parent agent BRAN verified
+✓ Parent agent info verified
+
+════════════════════════════════════════════════════════════
+  STEP 1: Create Sub-Agent AID and Request Delegation
+════════════════════════════════════════════════════════════
+
+WARN[0000] The "UID" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "GID" variable is not set. Defaulting to a blank string. 
+═════════════════════════════════════════════════════════════
+SUB-AGENT INCEPTION (Step 1: Create and Request Delegation)
+═════════════════════════════════════════════════════════════
+Environment: docker
+Sub-Agent: JupiterTreasuryAgent
+Parent Agent: jupiterSellerAgent
+Task Data: /task-data
+═════════════════════════════════════════════════════════════
+
+[1/5] Loading configuration...
+✓ Sub-agent BRAN loaded: XtJQc8hlJ0lS+IABW++Q...
+✓ Parent agent AID: EHOw31JA2UKoXjrgXydyLgoDTSQz351rHCh69pjBJr69
+✓ Parent agent OOBI: http://keria:3902/oobi/EHOw31JA2UKoXjrgXydyLgoDTSQz351rHCh69pjBJr69/agent/ECNGt1gXO9m35-FuWV-MIdWVVihCTC65SNrXDLoAnOh2    
+
+[2/5] Creating sub-agent client...
+✓ Sub-agent client created
+  Controller: EKUzOiYdTdQLC64wwtMVfTfSxPgWCGJ8yxPdmI5zufXb
+  Agent: ED0ScHNudpvxc6wWnvlJveBKTdPD2s72rGOqYGtwyAUv
+
+[3/5] Checking if agent already exists...
+✓ Agent already exists in KERIA
+  AID: EGZrWtt2AB_yJTato_QGsFho1GP0ymjx-L1IRpp7SZ8e
+
+[4/5] Using existing agent
+✓ Sub-agent AID: EGZrWtt2AB_yJTato_QGsFho1GP0ymjx-L1IRpp7SZ8e
+
+[5/5] Saving delegation info...
+✓ Saved: JupiterTreasuryAgent-delegate-info.json
+
+═════════════════════════════════════════════════════════════
+✅ SUB-AGENT INCEPTION COMPLETE
+═════════════════════════════════════════════════════════════
+
+Sub-Agent AID: EGZrWtt2AB_yJTato_QGsFho1GP0ymjx-L1IRpp7SZ8e
+ICP Operation: delegation.EGZrWtt2AB_yJTato_QGsFho1GP0ymjx-L1IRpp7SZ8e
+Status: Using existing agent from KERIA
+
+Trust Chain:
+  OOR Holder → jupiterSellerAgent → JupiterTreasuryAgent
+
+Next: Parent agent must approve delegation
+
+✓ Step 1 complete: Sub-agent AID created and delegation requested
+
+════════════════════════════════════════════════════════════
+  STEP 2: Parent Agent Approves Delegation
+════════════════════════════════════════════════════════════
+
+WARN[0000] The "UID" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "GID" variable is not set. Defaulting to a blank string.
+═════════════════════════════════════════════════════════════
+SUB-AGENT DELEGATION APPROVE (Step 2: Parent Approves)
+═════════════════════════════════════════════════════════════
+Environment: docker
+Parent Agent: jupiterSellerAgent
+Sub-Agent: JupiterTreasuryAgent
+═════════════════════════════════════════════════════════════
+
+[1/4] Loading parent agent BRAN...
+✓ Parent agent BRAN loaded: ownfGiLsFwsRabSkc+RV...
+
+[2/4] Connecting as parent agent...
+✓ Connected as parent agent
+  Controller: EBsA8HUGylUqWjvjp9KltGo7JG60ZkxMBflKgaCy1xQY
+  Agent: ECNGt1gXO9m35-FuWV-MIdWVVihCTC65SNrXDLoAnOh2
+
+[3/4] Loading sub-agent delegation request...
+✓ Sub-agent AID: EGZrWtt2AB_yJTato_QGsFho1GP0ymjx-L1IRpp7SZ8e
+
+[4/4] Approving delegation...
+✓ Delegation approved
+
+═════════════════════════════════════════════════════════════
+✅ PARENT AGENT APPROVAL COMPLETE
+═════════════════════════════════════════════════════════════
+
+Next: Sub-agent must complete delegation
+
+✓ Step 2 complete: Parent agent approved delegation
+
+════════════════════════════════════════════════════════════
+  STEP 3: Sub-Agent Completes Delegation
+════════════════════════════════════════════════════════════
+
+WARN[0000] The "UID" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "GID" variable is not set. Defaulting to a blank string.
+═════════════════════════════════════════════════════════════
+SUB-AGENT DELEGATION FINISH (Step 3: Complete Delegation)
+═════════════════════════════════════════════════════════════
+Environment: docker
+Sub-Agent: JupiterTreasuryAgent
+Parent Agent: jupiterSellerAgent
+═════════════════════════════════════════════════════════════
+
+[1/6] Loading configuration...
+✓ Sub-agent BRAN loaded
+✓ Sub-agent AID: EGZrWtt2AB_yJTato_QGsFho1GP0ymjx-L1IRpp7SZ8e
+
+[2/6] Connecting as sub-agent...
+✓ Connected as sub-agent
+  Controller: EKUzOiYdTdQLC64wwtMVfTfSxPgWCGJ8yxPdmI5zufXb
+  Agent: ED0ScHNudpvxc6wWnvlJveBKTdPD2s72rGOqYGtwyAUv
+
+[3/6] Resolving parent agent OOBI...
+  Parent OOBI: http://keria:3902/oobi/EHOw31JA2UKoXjrgXydyLgoDTSQz351rHCh69pjBJr69/agent/ECNGt1gXO9m35-FuWV-MIdWVVihCTC65SNrXDLoAnOh2
+✓ Parent agent OOBI resolved
+
+[4/6] Waiting for delegation to propagate...
+✓ Wait complete
+
+[5/6] Adding endpoint role...
+✓ Endpoint role added
+
+[6/6] Getting sub-agent OOBI...
+✓ Sub-agent OOBI: http://keria:3902/oobi/EGZrWtt2AB_yJTato_QGsFho1GP0ymjx-L1IRpp7SZ8e/agent/ED0ScHNudpvxc6wWnvlJveBKTdPD2s72rGOqYGtwyAUv
+
+
+deepitha@Deepitha:~/projects/algoTITANV61/legentvLEI$ docker compose exec tsx-shell tsx \
+    sig-wallet/src/tasks/subagent/subagent-delegate-finish.ts \
+    docker \
+    JupiterTreasuryAgent \
+    jupiterSellerAgent \
+    /task-data
+WARN[0000] The "UID" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "GID" variable is not set. Defaulting to a blank string.
+═════════════════════════════════════════════════════════════
+SUB-AGENT DELEGATION FINISH (Step 3: Complete Delegation)
+═════════════════════════════════════════════════════════════
+Environment: docker
+Sub-Agent: JupiterTreasuryAgent
+Parent Agent: jupiterSellerAgent
+═════════════════════════════════════════════════════════════
+
+[1/7] Loading configuration...
+✓ Sub-agent BRAN loaded
+✓ Sub-agent AID: EGZrWtt2AB_yJTato_QGsFho1GP0ymjx-L1IRpp7SZ8e
+
+[2/7] Connecting as sub-agent...
+✓ Connected as sub-agent
+  Controller: EKUzOiYdTdQLC64wwtMVfTfSxPgWCGJ8yxPdmI5zufXb
+  Agent: ED0ScHNudpvxc6wWnvlJveBKTdPD2s72rGOqYGtwyAUv
+
+[3/7] Resolving parent agent OOBI...
+  Parent OOBI: http://keria:3902/oobi/EHOw31JA2UKoXjrgXydyLgoDTSQz351rHCh69pjBJr69/agent/ECNGt1gXO9m35-FuWV-MIdWVVihCTC65SNrXDLoAnOh2
+✓ Parent agent OOBI resolved
+
+[4/7] Querying parent key state...
+✓ Parent key state queried
+
+[5/7] Waiting for delegation to propagate...
+✓ Wait complete
+
+[6/7] Adding endpoint role...
+✓ Endpoint role added
+
+[7/7] Getting sub-agent details...
+✓ Sub-agent OOBI: http://keria:3902/oobi/EGZrWtt2AB_yJTato_QGsFho1GP0ymjx-L1IRpp7SZ8e/agent/ED0ScHNudpvxc6wWnvlJveBKTdPD2s72rGOqYGtwyAUv
+✓ Sub-agent info saved: /task-data/JupiterTreasuryAgent-info.json
+
+═════════════════════════════════════════════════════════════
+✅ SUB-AGENT DELEGATION COMPLETE
+═════════════════════════════════════════════════════════════
+
+Trust Chain:
+  OOR Holder → jupiterSellerAgent → JupiterTreasuryAgent
+
+Sub-Agent Details:
+  AID: EGZrWtt2AB_yJTato_QGsFho1GP0ymjx-L1IRpp7SZ8e
+  OOBI: http://keria:3902/oobi/EGZrWtt2AB_yJTato_QGsFho1GP0ymjx-L1IRpp7SZ8e/agent/ED0ScHNudpvxc6wWnvlJveBKTdPD2s72rGOqYGtwyAUv
+
+deepitha@Deepitha:~/projects/algoTITANV61/legentvLEI$ cat > sig-wallet/src/tasks/subagent/subagent-delete-temp.ts << 'EOF'
+import { getOrCreateClient } from '../../client/identidocker compose exec tsx-shell /vlei/tsx-script-runner.sh subagent/subagent-delete-temp.tsdeepitha@Deepitha:~/projects/algoTITANV61/legentvLEI$ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

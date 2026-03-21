@@ -1,0 +1,41 @@
+{
+  "invoice": {
+    "schemaName": "InvoiceCredential",
+    "schemaPath": "./schemas/invoice-credential-schema.json",
+    "registryName": "JUPITER_SALES_REGISTRY",
+    "oorSchemaSaid": "ENPXp1vQzRF6JwIuS-mp2U8Uf1MoADoP_GqQ62VsDZWY",
+    "issuer": {
+      "alias": "Jupiter_Chief_Sales_Officer",
+      "lei": "3358004DXAMRWRUIYJ05"
+    },
+    "holder": {
+      "alias": "tommyBuyerAgent",
+      "lei": "54930012QJWZMYHNJW95"
+    },
+    "sampleInvoice": {
+      "invoiceNumber": "INV-2025-001",
+      "invoiceDate": "2025-11-13T00:00:00Z",
+      "dueDate": "2025-12-13T00:00:00Z",
+      "sellerLEI": "3358004DXAMRWRUIYJ05",
+      "buyerLEI": "54930012QJWZMYHNJW95",
+      "currency": "USD",
+      "totalAmount": 100000.00,
+      "lineItems": [
+        {
+          "description": "Textile Apparel",
+          "quantity": 10000,
+          "unitPrice": 10.00,
+          "amount": 100000.00
+        }
+      ],
+      "paymentTerms": {
+        "terms": "Net 30 days from invoice date",
+        "discountCurve": []
+      },
+      "paymentMethod": "blockchain",
+      "paymentChainID": "algorand",
+      "paymentWalletAddress": "XQVKZ7MNMJH3ZHCVGKQY6RJVMZJ2ZKWXQO4HNBEXAMPLE",
+      "ref_uri": "https://algoexplorer.io/tx/ABC123DEF456GHI789JKL012MNO345PQR678STU901VWX234YZ"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+FROM gleif/sally:1.0.2
+
+# Copy agent verification module and startup script
+COPY sally_agent_verification.py /sally/sally_agent_verification.py
+COPY sally_startup_with_agent_verification.py /sally/sally_startup_with_agent_verification.py
+
+# Copy enhanced entry point
+COPY entry-point-agent-verification.sh /sally/entry-point.sh
+
+# Make executable
+RUN chmod +x /sally/entry-point.sh
+
+# Set Python path
+ENV PYTHONPATH=/sally:${PYTHONPATH}
+
+# Use enhanced entry point
+ENTRYPOINT ["/sally/entry-point.sh"]
