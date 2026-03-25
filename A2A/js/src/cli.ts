@@ -130,9 +130,17 @@ async function main() {
   await fetchAgentCard();
 
   console.log(dim("\n  Commands:"));
-  console.log(dim("    start negotiation <price>  — begin a new negotiation"));
+  console.log(dim("    start negotiation <price>  — begin a new negotiation (price optional)"));
+  console.log(dim("    dd accept                  — accept seller's proposed early payment date"));
+  console.log(dim("    dd accept YYYY-MM-DD        — choose your own early payment date"));
+  console.log(dim("    dd reject                  — decline discount, pay full on due date"));
   console.log(dim("    /new                       — reset session"));
-  console.log(dim("    /exit                      — quit\n"));
+  console.log(dim("    /exit                      — quit"));
+  console.log(dim(""));
+  console.log(dim("  DD Workflow:"));
+  console.log(dim("    1. Run 'start negotiation' and watch the negotiation complete in Terminals 1 & 2."));
+  console.log(dim("    2. When you see the DD Offer in Terminal 2 (Buyer), come back here."));
+  console.log(dim("    3. Type 'dd accept' or 'dd accept YYYY-MM-DD' to trigger the discounted invoice.\n"));
 
   rl.setPrompt(cyan("You: "));
   rl.prompt();
@@ -155,6 +163,15 @@ async function main() {
     }
 
     // ── Build and send message ────────────────────────────────────────────────
+
+    // DD commands must start a NEW task — the negotiation task is already
+    // completed and removed from InMemoryTaskStore. Clearing taskId makes
+    // the SDK create a fresh task. We keep contextId to stay in the same
+    // conversation so the buyer agent can find the pending DD offer.
+    if (input.toLowerCase().startsWith("dd ")) {
+      currentTaskId = undefined;
+    }
+
     const messagePayload: Message = {
       messageId: crypto.randomUUID(),
       kind:      "message",

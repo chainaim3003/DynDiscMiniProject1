@@ -7,7 +7,8 @@ export type NegotiationStatus =
     | "COMPLETED"
     | "FAILED"
     | "REJECTED"
-    | "ESCALATED";
+    | "ESCALATED"
+    | "DD_COMPLETED";   // negotiation + dynamic discounting fully settled
 
 export type NegotiationAction = "OFFER" | "COUNTER_OFFER" | "ACCEPT" | "REJECT";
 
@@ -95,6 +96,51 @@ export interface PurchaseOrderData {
     deliveryDate: string;
 }
 
+// ================= DYNAMIC DISCOUNTING MESSAGE TYPES =================
+
+export interface DDOfferData {
+    type: "DD_OFFER";
+    invoiceId: string;
+    negotiationId: string;
+    invoiceDate: string;
+    dueDate: string;
+    originalTotal: number;
+    maxDiscountRate: number;
+    paymentTermsDays: number;
+    proposedSettlementDate: string;
+    discountAtProposedDate: {
+        daysEarly: number;
+        totalDays: number;
+        appliedRate: number;
+        discountedAmount: number;
+        savingAmount: number;
+    };
+}
+
+export interface DDAcceptData {
+    type: "DD_ACCEPT";
+    invoiceId: string;
+    negotiationId: string;
+    chosenSettlementDate: string;
+    from: "BUYER";
+}
+
+export interface DDInvoiceData {
+    type: "DD_INVOICE";
+    invoiceId: string;
+    negotiationId: string;
+    originalTotal: number;
+    discountedTotal: number;
+    savingAmount: number;
+    appliedRate: number;
+    settlementDate: string;
+    dueDate: string;
+    actusContractId: string;
+    actusScenarioId: string;
+    actusSimulationStatus: "SUCCESS" | "FAILED";
+    actusError?: string;
+}
+
 export type NegotiationData =
     | OfferData
     | CounterOfferData
@@ -102,7 +148,10 @@ export type NegotiationData =
     | RejectionData
     | EscalationNoticeData
     | InvoiceData
-    | PurchaseOrderData;
+    | PurchaseOrderData
+    | DDOfferData
+    | DDAcceptData
+    | DDInvoiceData;
 
 // ================= STATE MANAGEMENT =================
 

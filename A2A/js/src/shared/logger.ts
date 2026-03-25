@@ -430,6 +430,49 @@ export class NegotiationLogger {
         console.log(`${C.dim}  ${hline()}${C.reset}`);
     }
 
+    // ── Dynamic Discounting: DD_OFFER ────────────────────────────────────────
+    printDDOffer(data: any) {
+        const pct = (data.maxDiscountRate * 100).toFixed(3);
+        const propPct = (data.discountAtProposedDate.appliedRate * 100).toFixed(3);
+        console.log("");
+        console.log(`  ${C.cyan + C.bold}  💰  DD OFFER SENT${''.padEnd(W - 18)}  ${C.reset}`);
+        console.log(`${C.dim}  ${hline()}${C.reset}`);
+        console.log(`${C.dim}  Invoice      : ${data.invoiceId}${C.reset}`);
+        console.log(`${C.dim}  Original     : ₹${data.originalTotal.toLocaleString()}${C.reset}`);
+        console.log(`  ${C.bold}  Max DD Rate  →  ${pct}% (linear)${C.reset}`);
+        console.log(`  ${C.bold}  Proposed pay : ${data.proposedSettlementDate}  (${data.discountAtProposedDate.daysEarly} days early)${C.reset}`);
+        console.log(`  ${C.green + C.bold}  If accepted  →  ₹${data.discountAtProposedDate.discountedAmount.toLocaleString()}  (save ₹${data.discountAtProposedDate.savingAmount.toLocaleString()} @ ${propPct}%)${C.reset}`);
+        console.log(`${C.dim}  ${hline()}${C.reset}`);
+    }
+
+    // ── Dynamic Discounting: DD_ACCEPT ───────────────────────────────────────
+    printDDAccept(data: any) {
+        console.log("");
+        console.log(`  ${C.green + C.bold}  ✓  DD ACCEPTED BY BUYER${''.padEnd(W - 24)}  ${C.reset}`);
+        console.log(`${C.dim}  ${hline()}${C.reset}`);
+        console.log(`${C.dim}  Invoice    : ${data.invoiceId}${C.reset}`);
+        console.log(`  ${C.bold}  Settlement : ${data.chosenSettlementDate}${C.reset}`);
+        console.log(`${C.dim}  Computing discounted amount and submitting to ACTUS...${C.reset}`);
+        console.log(`${C.dim}  ${hline()}${C.reset}`);
+    }
+
+    // ── Dynamic Discounting: DD_INVOICE (final) ───────────────────────────────
+    printDDInvoice(data: any) {
+        const pct = (data.appliedRate * 100).toFixed(3);
+        const statusColor = data.actusSimulationStatus === "SUCCESS" ? C.green + C.bold : C.red + C.bold;
+        console.log("");
+        console.log(`  ${C.magenta + C.bold}  📄  DD INVOICE — FINAL${''.padEnd(W - 23)}  ${C.reset}`);
+        console.log(`${C.dim}  ${hline()}${C.reset}`);
+        console.log(`${C.dim}  Invoice ID   : ${data.invoiceId}${C.reset}`);
+        console.log(`${C.dim}  Original     : ₹${data.originalTotal.toLocaleString()}${C.reset}`);
+        console.log(`  ${C.bold}  Applied Rate →  ${pct}%${C.reset}`);
+        console.log(`  ${C.green + C.bold}  PAYABLE      →  ₹${data.discountedTotal.toLocaleString()}  (saved ₹${data.savingAmount.toLocaleString()})${C.reset}`);
+        console.log(`  ${C.bold}  Settle by   →  ${data.settlementDate}${C.reset}`);
+        console.log(`${C.dim}  ACTUS ID     : ${data.actusContractId}${C.reset}`);
+        console.log(`  ${statusColor}  ACTUS Status →  ${data.actusSimulationStatus}${data.actusError ? ' — ' + data.actusError : ''}${C.reset}`);
+        console.log(`${C.dim}  ${hline()}${C.reset}`);
+    }
+
     getLogs(): NegotiationLog[] {
         return this.logs;
     }

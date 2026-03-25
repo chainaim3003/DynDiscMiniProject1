@@ -35,10 +35,14 @@ import {
   InvoiceData,
   PurchaseOrderData,
   NegotiationData,
+  DDOfferData,
+  DDAcceptData,
 } from "../../shared/negotiation-types.js";
 
 import { LLMNegotiationClient, LLMPromptContext } from "../../shared/llm-client.js";
 import { NegotiationLogger, logInternal, suppressSDKNoise } from "../../shared/logger.js";
+import { computeSafeDDRate, computeLinearDiscount, addDays } from "../../shared/dd-calculator.js";
+import { ActusClient } from "../../shared/actus-client.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
@@ -58,6 +62,13 @@ const SELLER_CONFIG = {
     dealPriority:    0.7,
     minProfitMargin: 5,
   },
+  // Dynamic Discounting config
+  dd: {
+    paymentTermsDays:        30,   // Net 30
+    proposedEarlyPayDays:    10,   // seller proposes buyer pays within 10 days
+    safetyFactor:            0.5,  // give away at most 50% of profit as discount
+    hurdleRateAnnualized:    0.075,
+  },
 };
 
 const TARGET_PRICE = Math.round(
@@ -69,9 +80,11 @@ class SellerAgentExecutor implements AgentExecutor {
   private negotiations = new Map<string, SellerNegotiationState>();
   private loggers      = new Map<string, NegotiationLogger>();
   private llmClient: LLMNegotiationClient;
+  private actusClient: ActusClient;
 
   constructor() {
-    this.llmClient = new LLMNegotiationClient();
+    this.llmClient   = new LLMNegotiationClient();
+    this.actusClient = new ActusClient();
   }
 
   async cancelTask(taskId: string): Promise<void> {
@@ -107,6 +120,9 @@ class SellerAgentExecutor implements AgentExecutor {
         break;
       case "ESCALATION_NOTICE":
         await this.handleEscalationNotice(data as EscalationNoticeData, contextId, bus, taskId);
+        break;
+      case "DD_ACCEPT":
+        await this.handleDDAccept(data as DDAcceptData, contextId, bus, taskId);
         break;
       default:
         logInternal(`Unknown message type: ${(data as any).type}`);
@@ -191,9 +207,6 @@ class SellerAgentExecutor implements AgentExecutor {
     state.lastBuyerOffer = data.pricePerUnit;
 
     // ── Use seller's own last offer as the baseline for delta display ─────────
-    // data.previousPrice is the buyer's internal reference — irrelevant from the
-    // seller's perspective. state.lastSellerOffer is what the seller actually sent
-    // last, so we compute the delta against that to show meaningful movement.
     const sellerLastPrice      = state.lastSellerOffer;
     const priceMovement        = sellerLastPrice !== undefined
       ? data.pricePerUnit - sellerLastPrice
@@ -380,10 +393,151 @@ class SellerAgentExecutor implements AgentExecutor {
     }
 
     logger.printPurchaseOrder(data);
-    await this.sendInvoice(state, data.poId, logger, contextId);
+
+    // ── Step 1: Send the standard full invoice (existing behavior) ────────────
+    const invoiceId = `INV-${Date.now()}`;
+    await this.sendInvoice(state, data.poId, invoiceId, logger, contextId);
     state.status = "COMPLETED";
 
-    this.respond(bus, taskId, contextId, "📄 Invoice sent to buyer\nNegotiation completed successfully!");
+    // ── Step 2: Compute safe DD rate from seller's margin ─────────────────────
+    const agreedPrice = state.agreedPrice!;
+    const safeDDRate  = computeSafeDDRate(
+      agreedPrice,
+      SELLER_CONFIG.marginPrice,
+      SELLER_CONFIG.dd.safetyFactor
+    );
+
+    if (safeDDRate <= 0) {
+      logInternal("DD rate is 0 (no profit margin) — skipping DD offer");
+      this.respond(bus, taskId, contextId, "📄 Invoice sent to buyer\nNegotiation completed successfully!");
+      return;
+    }
+
+    // ── Step 3: Build DD_OFFER payload ────────────────────────────────────────
+    const invoiceDate            = new Date().toISOString().split("T")[0];
+    const dueDate                = addDays(invoiceDate, SELLER_CONFIG.dd.paymentTermsDays);
+    const proposedSettlementDate = addDays(invoiceDate, SELLER_CONFIG.dd.proposedEarlyPayDays);
+
+    const subtotal    = agreedPrice * state.quantity;
+    const tax         = Math.round(subtotal * 0.18);
+    const totalAmount = subtotal + tax;
+
+    const discountAtProposed = computeLinearDiscount(
+      totalAmount,
+      safeDDRate,
+      invoiceDate,
+      dueDate,
+      proposedSettlementDate
+    );
+
+    const ddOfferData: DDOfferData = {
+      type:                    "DD_OFFER",
+      invoiceId,
+      negotiationId:           state.negotiationId,
+      invoiceDate,
+      dueDate,
+      originalTotal:           totalAmount,
+      maxDiscountRate:         safeDDRate,
+      paymentTermsDays:        SELLER_CONFIG.dd.paymentTermsDays,
+      proposedSettlementDate,
+      discountAtProposedDate:  discountAtProposed,
+    };
+
+    logger.printDDOffer(ddOfferData);
+    await this.sendToBuyer(ddOfferData, contextId);
+
+    this.respond(
+      bus, taskId, contextId,
+      `📄 Invoice sent\n💰 DD Offer sent — max ${(safeDDRate * 100).toFixed(3)}% discount\n   Pay by ${proposedSettlementDate} → ₹${discountAtProposed.discountedAmount.toLocaleString()} (save ₹${discountAtProposed.savingAmount.toLocaleString()})\nAwaiting buyer's DD acceptance...`
+    );
+  }
+
+  // ================= HANDLE DD_ACCEPT =================
+  private async handleDDAccept(
+    data: DDAcceptData,
+    contextId: string,
+    bus: ExecutionEventBus,
+    taskId: string
+  ) {
+    const state  = this.negotiations.get(data.negotiationId);
+    const logger = this.loggers.get(data.negotiationId);
+
+    if (!state || !logger) {
+      logInternal(`DD_ACCEPT: negotiation state not found: ${data.negotiationId}`);
+      return;
+    }
+
+    logger.printDDAccept(data);
+
+    // ── Re-compute discount for the buyer's chosen settlement date ────────────
+    const agreedPrice = state.agreedPrice!;
+    const safeDDRate  = computeSafeDDRate(
+      agreedPrice,
+      SELLER_CONFIG.marginPrice,
+      SELLER_CONFIG.dd.safetyFactor
+    );
+
+    const invoiceDate = new Date().toISOString().split("T")[0];
+    const dueDate     = addDays(invoiceDate, SELLER_CONFIG.dd.paymentTermsDays);
+    const subtotal    = agreedPrice * state.quantity;
+    const tax         = Math.round(subtotal * 0.18);
+    const totalAmount = subtotal + tax;
+
+    const ddResult = computeLinearDiscount(
+      totalAmount,
+      safeDDRate,
+      invoiceDate,
+      dueDate,
+      data.chosenSettlementDate
+    );
+
+    // ── Submit to ACTUS ───────────────────────────────────────────────────────
+    logInternal(`Submitting DD contract to ACTUS for ${data.invoiceId}...`);
+
+    const actusResult = await this.actusClient.submitDDContract({
+      contractId:           data.invoiceId,
+      negotiationId:        data.negotiationId,
+      invoiceDate,
+      dueDate,
+      settlementDate:       data.chosenSettlementDate,
+      notionalAmount:       totalAmount,
+      maxDiscountRate:      safeDDRate,
+      hurdleRateAnnualized: SELLER_CONFIG.dd.hurdleRateAnnualized,
+      sellerRevenue:        state.totalRevenue ?? totalAmount,
+    });
+
+    if (actusResult.success) {
+      logInternal(`ACTUS simulation SUCCESS — contractId: ${actusResult.contractId}  scenarioId: ${actusResult.scenarioId}`);
+    } else {
+      logInternal(`ACTUS simulation FAILED — ${actusResult.error}`);
+    }
+
+    // ── Build and send DD_INVOICE ─────────────────────────────────────────────
+    const ddInvoice = {
+      type:                    "DD_INVOICE",
+      invoiceId:               data.invoiceId,
+      negotiationId:           data.negotiationId,
+      originalTotal:           totalAmount,
+      discountedTotal:         ddResult.discountedAmount,
+      savingAmount:            ddResult.savingAmount,
+      appliedRate:             ddResult.appliedRate,
+      settlementDate:          data.chosenSettlementDate,
+      dueDate,
+      actusContractId:         actusResult.contractId,
+      actusScenarioId:         actusResult.scenarioId,
+      actusSimulationStatus:   actusResult.success ? "SUCCESS" : "FAILED",
+      actusError:              actusResult.error,
+    };
+
+    logger.printDDInvoice(ddInvoice);
+    await this.sendToBuyer(ddInvoice, contextId);
+
+    state.status = "DD_COMPLETED";
+
+    this.respond(
+      bus, taskId, contextId,
+      `✅ DD Invoice sent!\n\nOriginal   : ₹${totalAmount.toLocaleString()}\nDiscounted : ₹${ddResult.discountedAmount.toLocaleString()}  (${(ddResult.appliedRate * 100).toFixed(3)}% off)\nSaving     : ₹${ddResult.savingAmount.toLocaleString()}\nSettle by  : ${data.chosenSettlementDate}\nACTUS      : ${actusResult.success ? "✓ Simulation complete" : "⚠ " + actusResult.error}\n\nWorkflow complete!`
+    );
   }
 
   // ================= HYBRID DECISION MAKING =================
@@ -406,7 +560,9 @@ class SellerAgentExecutor implements AgentExecutor {
       lastOwnOffer:   state.lastSellerOffer,
       lastTheirOffer: state.lastBuyerOffer,
       history:        state.history,
-      constraints:    { marginPrice: state.marginPrice, quantity: state.quantity },
+      // Pass margin + minProfitMargin as the effective floor so the LLM
+      // never reasons about accepting a zero-profit deal.
+      constraints:    { marginPrice: state.marginPrice + state.strategyParams.minProfitMargin, quantity: state.quantity },
       targetPrice:    TARGET_PRICE,
     };
     const llmResponse = await this.llmClient.getNegotiationDecision(context);
@@ -417,16 +573,20 @@ class SellerAgentExecutor implements AgentExecutor {
     decision: NegotiationDecision,
     state: SellerNegotiationState
   ): NegotiationDecision | null {
+    // The minimum we will ever accept — cost floor + required profit buffer.
+    const minAcceptable = state.marginPrice + state.strategyParams.minProfitMargin;
+
     if (decision.action === "ACCEPT") {
-      if (state.lastBuyerOffer && state.lastBuyerOffer < state.marginPrice) {
-        logInternal(`Cannot accept ₹${state.lastBuyerOffer} — below margin ₹${state.marginPrice}`);
+      // Use strict < minAcceptable (not < marginPrice) so ₹350 is also rejected.
+      if (state.lastBuyerOffer && state.lastBuyerOffer < minAcceptable) {
+        logInternal(`Cannot accept ₹${state.lastBuyerOffer} — below min acceptable ₹${minAcceptable} (margin ₹${state.marginPrice} + buffer ₹${state.strategyParams.minProfitMargin})`);
         if (state.currentRound < state.maxRounds) {
           decision.action    = "COUNTER";
-          decision.price     = state.marginPrice + state.strategyParams.minProfitMargin;
-          decision.reasoning = "Buyer offer below margin, making counter-offer";
+          decision.price     = minAcceptable;
+          decision.reasoning = `Buyer offer below minimum acceptable ₹${minAcceptable}, countering at floor`;
         } else {
           decision.action    = "REJECT";
-          decision.reasoning = "Buyer offer below margin in final round";
+          decision.reasoning = `Buyer offer ₹${state.lastBuyerOffer} below minimum ₹${minAcceptable} in final round`;
         }
       }
     }
@@ -507,7 +667,6 @@ class SellerAgentExecutor implements AgentExecutor {
     const priceMovementPercent = (priceMovement / previousPrice) * 100;
     const gap                  = price - state.lastBuyerOffer!;
 
-    // ── LOG BEFORE SENDING so it appears in chronological order ──────────────
     logger.log({
       round:                state.currentRound,
       messageType:          "COUNTER_OFFER",
@@ -555,7 +714,6 @@ class SellerAgentExecutor implements AgentExecutor {
     const totalAmount   = acceptedPrice * state.quantity;
     const profit        = acceptedPrice - state.marginPrice;
 
-    // ── LOG BEFORE SENDING so it appears in chronological order ──────────────
     logger.log({
       round:        state.currentRound,
       messageType:  "ACCEPT",
@@ -592,6 +750,7 @@ class SellerAgentExecutor implements AgentExecutor {
   private async sendInvoice(
     state: SellerNegotiationState,
     poId: string,
+    invoiceId: string,
     logger: NegotiationLogger,
     contextId: string
   ) {
@@ -601,7 +760,7 @@ class SellerAgentExecutor implements AgentExecutor {
 
     const invoiceData: InvoiceData = {
       type:          "INVOICE",
-      invoiceId:     `INV-${Date.now()}`,
+      invoiceId,
       negotiationId: state.negotiationId,
       poId,
       invoiceDate:   new Date().toISOString(),
@@ -612,13 +771,11 @@ class SellerAgentExecutor implements AgentExecutor {
         tax,
         total,
       },
-      paymentTerms: "Net 30 days",
+      paymentTerms: `Net ${SELLER_CONFIG.dd.paymentTermsDays} days`,
       deliveryDate: state.deliveryDate,
     };
 
-    // ── LOG BEFORE SENDING so it appears in chronological order ──────────────
     logger.printInvoice(invoiceData);
-
     await this.sendToBuyer(invoiceData, contextId);
   }
 
@@ -694,7 +851,8 @@ async function main() {
     console.log(`    Margin Price : ₹${SELLER_CONFIG.marginPrice}/unit  (protected)`);
     console.log(`    Target Price : ₹${TARGET_PRICE}/unit`);
     console.log(`    Target Profit: ${(SELLER_CONFIG.targetProfitPercentage * 100).toFixed(0)}%`);
-    console.log(`    Max Rounds   : ${SELLER_CONFIG.maxRounds}\n`);
+    console.log(`    Max Rounds   : ${SELLER_CONFIG.maxRounds}`);
+    console.log(`    DD Safety    : ${SELLER_CONFIG.dd.safetyFactor * 100}%  |  Payment Terms: Net ${SELLER_CONFIG.dd.paymentTermsDays}\n`);
   });
 }
 

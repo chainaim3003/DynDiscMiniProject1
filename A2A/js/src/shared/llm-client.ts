@@ -122,7 +122,9 @@ ${isBuyer ? "- Start lower to create negotiation room" : "- Start higher to anch
                     ? `- THIS IS THE FINAL ROUND - deal will fail if not accepted
 - Consider: Is this the best offer you'll get?
 - Accepting a "good enough" deal is better than no deal
-${isBuyer ? `- If their offer is within budget, seriously consider accepting` : `- If their offer is above margin with some profit, seriously consider accepting`}`
+${isBuyer ? `- If their offer is within budget, seriously consider accepting` : `- If their offer is STRICTLY ABOVE ₹${context.constraints.marginPrice} (your minimum floor), you may accept
+- NEVER accept at exactly ₹${context.constraints.marginPrice} — that is zero profit
+- Any deal with at least ₹1 profit is worth taking in the final round`}`
                     : `- Middle rounds are for convergence
 - Show flexibility but don't concede too quickly
 - Analyze their pattern: Are they moving toward you?
@@ -136,8 +138,9 @@ ${context.lastTheirOffer
 ${isBuyer
                     ? `   - ${context.lastTheirOffer <= context.constraints.maxBudget! ? "✓ Within budget" : "✗ Exceeds budget"}
    - ${context.lastTheirOffer <= context.targetPrice! ? "✓ Below target (EXCELLENT)" : `${((context.lastTheirOffer - context.targetPrice!) / context.targetPrice! * 100).toFixed(1)}% above target`}`
-                    : `   - ${context.lastTheirOffer >= context.constraints.marginPrice! ? "✓ Above margin" : "✗ Below margin (REJECT)"}
-   - Profit: ₹${context.lastTheirOffer - context.constraints.marginPrice!}/unit (${(((context.lastTheirOffer - context.constraints.marginPrice!) / context.constraints.marginPrice!) * 100).toFixed(1)}%)`
+                    : `   - ${context.lastTheirOffer > context.constraints.marginPrice! ? "✓ Above minimum (ACCEPTABLE)" : "✗ At or below minimum floor (MUST REJECT or COUNTER)"}
+   - Profit: ₹${context.lastTheirOffer - context.constraints.marginPrice!}/unit (${(((context.lastTheirOffer - context.constraints.marginPrice!) / context.constraints.marginPrice!) * 100).toFixed(1)}%)
+   - NOTE: ₹${context.constraints.marginPrice}/unit is your MINIMUM — any offer at or below this has zero or negative profit`
                 }
 
 2. Gap analysis:
