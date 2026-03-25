@@ -1,0 +1,101 @@
+{
+  "name": "Jupiter Seller Agent",
+  "description": "Autonomous AI agent responsible for initiating, negotiating, and managing sales orders for JUPITER KNITTING COMPANY.",
+  "url": "https://jupiter-agent.com/",
+  "provider": {
+    "organization": "JUPITER KNITTING COMPANY",
+    "url": "https://jupiterknitting.com"
+  },
+  "version": "1.0.0",
+  "capabilities": {
+    "streaming": true,
+    "stateTransitionHistory": true
+  },
+  "skills": [
+    {
+      "id": "procurement_management",
+      "name": "Procurement Management",
+      "description": "Collaborates with verified buyer agents to review incoming trade requirements, evaluate purchase requests, and align production capacity with order feasibility. Ensures all interactions occur within verified GLEIF trust boundaries.",
+      "tags": [
+        "seller",
+        "procurement",
+        "verification",
+        "gleif",
+        "trade",
+        "compliance"
+      ]
+    },
+    {
+      "id": "purchase_order_management",
+      "name": "Purchase Order Management",
+      "description": "Receives and processes purchase orders from verified buyer agents. Confirms order terms, delivery schedules, and initiates production after GLEIF credential validation.",
+      "tags": [
+        "seller",
+        "sales",
+        "purchase-order",
+        "gleif",
+        "automation",
+        "order-processing"
+      ]
+    },
+    {
+      "id": "invoice_approval",
+      "name": "Invoice Approval & Dispatch",
+      "description": "Generates and approves digital invoices for completed or approved purchase orders. Ensures all invoices include embedded vLEI credentials and adhere to traceability standards.",
+      "tags": [
+        "seller",
+        "finance",
+        "invoice",
+        "verification",
+        "traceability",
+        "gleif"
+      ]
+    },
+    {
+      "id": "payment_authorization",
+      "name": "Payment Authorization & Reconciliation",
+      "description": "Validates incoming payment confirmations from buyer agents, authenticates transaction credentials, and updates order fulfillment status in coordination with verified payment channels.",
+      "tags": [
+        "seller",
+        "payment",
+        "authentication",
+        "finance",
+        "gleif",
+        "compliance"
+      ]
+    }
+  ],
+  "extensions": {
+    "gleifIdentity": {
+      "lei": "3358004DXAMRWRUIYJ05",
+      "legalEntityName": "JUPITER KNITTING COMPANY",
+      "registryName": "JUPITER_REGISTRY",
+      "qvi": "EF-yQO-6Oxt631MU0OCTHLY54DNQoBL19vbHGrbX43S9"
+    },
+    "vLEImetadata": {
+      "agentName": "jupiterSellerAgent",
+      "oorHolderName": "Jupiter_Chief_Sales_Officer",
+      "delegatorAID": "EOvdixBXJx2n6hNT-t7o-P0HMMUPuBeZMLR7qhsOd6El",
+      "delegateeAID": "EOZN-bHzYFTcmDsjGtdcthVEidqHkz8KAomhKLmZlDHc",
+      "delegatorSAID": "EFVkHYc5FZgJ86JEK5GKzAW_tt-r7ycFG0LU6FnFC9zY",
+      "delegateeSAID": "EOZN-bHzYFTcmDsjGtdcthVEidqHkz8KAomhKLmZlDHc",
+      "delegatorOOBI": "http://keria:3902/oobi/EOvdixBXJx2n6hNT-t7o-P0HMMUPuBeZMLR7qhsOd6El/agent/ENU7bBzrI6XpkdNrqktnVEp852dOLr0aPpjKsdOTOk0A",
+      "delegateeOOBI": "http://keria:3902/oobi/EOZN-bHzYFTcmDsjGtdcthVEidqHkz8KAomhKLmZlDHc/agent/EODa5fGUhYEKgukNeIoVbaejtzGvdYsyXgh56HkG_Tev",
+      "leAID": "ENRYTrjfSAy10g0pQQE5C0hD1gRI-oNLfc2HKR2WX0a6",
+      "leOOBI": "http://keria:3902/oobi/ENRYTrjfSAy10g0pQQE5C0hD1gRI-oNLfc2HKR2WX0a6/agent/ECMqpiteajQ7eeuQeA0-0uqNUqEJmd3tTgbyFmGaSZan",
+      "verificationPath": [
+        "GLEIF_ROOT → QVI",
+        "QVI → JUPITER KNITTING COMPANY → Chief Sales Officer → jupiterSellerAgent"
+      ]
+    },
+    "gleifVerification": {
+      "gleifVerificationEndpoint": "https://gleif.org/api/v1/lei/3358004DXAMRWRUIYJ05"
+    },
+    "keriIdentifiers": {
+      "agentAID": "EOZN-bHzYFTcmDsjGtdcthVEidqHkz8KAomhKLmZlDHc",
+      "oorHolderAID": "EOvdixBXJx2n6hNT-t7o-P0HMMUPuBeZMLR7qhsOd6El",
+      "legalEntityAID": "ENRYTrjfSAy10g0pQQE5C0hD1gRI-oNLfc2HKR2WX0a6",
+      "qviAID": "EF-yQO-6Oxt631MU0OCTHLY54DNQoBL19vbHGrbX43S9"
+    }
+  }
+}

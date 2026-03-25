@@ -1,0 +1,10 @@
+node_modules
+.genkit
+.firebase
+.a2a-tasks
+
+# Environment variables - NEVER commit these
+.env
+.env.local
+src/agents/buyer-agent/.env
+src/agents/seller-agent/.env
